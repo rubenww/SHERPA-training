@@ -20,8 +20,8 @@ from optparse import OptionParser
 #'wrfchem_china_27kmres_2023'  # this in the case you use low and high sources summed up
 # chooseModel = 'emepV434_camsV42withCond_01005_month'
 # chooseModel = 'emepV4_45_cams61_withCond_01005_2021'#
-# chooseModel = 'met15_emep50_cams2015v80'#'emep45_cams80'#
-chooseModel = 'emep45_cams80_emi2015'#
+# chooseModel = 'met21_emep445_cams2015_42nocond'#'emep45_edgar_2022' #'met15_emep50_cams2015v80'#'emep45_cams80'#
+chooseModel = 'emep45_cams80'#
                
 #20230206 define if to split low and high level sources
 split_low_high_sources = False
@@ -38,12 +38,9 @@ start_time_loop = 0; end_time_loop = 1 #0,1 means you run only yearly values - 0
 # start_time_loop = 0; end_time_loop = 1 #0,1 means you run only yearly values - 0,5 means YEA + 4 seasons
 
 #20230206 list of SRR to be tested
-# aqi_to_be_tested = list([0,1,2,6])
-# aqi_to_be_tested = list([0,1,2])
-aqi_to_be_tested = list([1])
-# aqi_to_be_tested = list(range(15,19))
-# aqi_to_be_tested = list(range(11,12))
-# aqi_to_be_tested = list([1])
+# aqi_to_be_tested = list([0,1,2,5,6])
+# aqi_to_be_tested = list([5])
+aqi_to_be_tested = list([7])
 
 #20230206 standard optimization to be performed
 chooseOpt = 'step1_omegaPerPoll_aggRes_perPoll'        
@@ -69,9 +66,16 @@ elif chooseModel == 'emep45_cams80':
     import sherpa.configuration_EMEP_45_CAMSv80_01005 as c    
 elif chooseModel == 'emep45_cams80_emi2015':
     import sherpa.configuration_EMEP_45_CAMSv80_01005_emi2015 as c    
-elif chooseModel == 'met15_emep50_cams2015v80':
-    import sherpa.config_met15_emep50_cams2015v80 as c    
-
+# elif chooseModel == 'met15_emep50_cams2015v80':
+#     import sherpa.config_met15_emep50_cams2015v80 as c    
+# elif chooseModel == 'met15_emep434_cams2015v80':
+#     import sherpa.config_met15_emep434_cams2015v80 as c    
+# elif chooseModel == 'emep45_edgar_2022':
+#     import sherpa.config_emep45_edgar_2022 as c    
+# elif chooseModel == 'emep45_emep_2022':
+#     import sherpa.config_emep45_emep_2022 as c    
+# elif chooseModel == 'met21_emep445_cams2015_42nocond':
+#     import sherpa.config_met21_emep445_cams2015_42nocond as c    
    
 #20230206 only 'step1_omegaPerPoll_aggRes_perPoll' is currently used    
 if chooseOpt == 'step1_omegaPerPoll_aggRes':

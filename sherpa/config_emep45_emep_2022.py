@@ -66,8 +66,8 @@ def configuration(chooseModel, chooseOpt, time_resol, time_loop, aqi_selected, s
     if len(source_split_instance)==0 : #case of LH TOGETHER
         # conf.nSc = 18;              # LH TOGETHER, total number of scenarios
         # conf.Val = np.arange(1,18); # LH TOGETHER, validation scenarios
-        conf.nSc = 10;              # LH TOGETHER, total number of scenarios
-        conf.Val = np.arange(1,10); # LH TOGETHER, validation scenarios
+        conf.nSc = 8;              # LH TOGETHER, total number of scenarios
+        conf.Val = np.arange(1,8); # LH TOGETHER, validation scenarios
     elif len(source_split_instance)!=0 : #case of LH SEPARATED    
         conf.nSc = 7;                 # LH SEPARATED, total number of scenarios in case of splitting sources
         conf.Val = conf.Ide;          # LH SEPARATED, validation if splitting low and high ... final validation is done externally to the code
@@ -129,9 +129,9 @@ def configuration(chooseModel, chooseOpt, time_resol, time_loop, aqi_selected, s
     # n3 = 'SURF_ug_PM10_rh50-' + conf.season
     # n4 = 'SURF_ppb_O3-' + conf.season
     conf.vec2 = conf.vec1 #(n1, n2, n3, n4)
-    conf.vec3 = [[0,1],[0,1,2,3,4],[0,1,2,3,4],[0,1],[0,1],[0,1],[0,1,2,3,4], 
-                 [0,2,4], [0,2], [0,2,4], [0,1,2,3,4], [0,1,2,3,4], [0,1], [0,1,2,3,4],
-                 [0,2,4], [0,2], [0,2], [0,2]]; # no2 2voc 3nh3 4pm25 5so2 5nox
+    conf.vec3 = [[0,1],[0,1,2,3,4],[0,1,2,3,4],[0,1],[0,1],[0,1],[0,1,2,3,4],[0,1,2,3,4], 
+                 [0], [2], [0,1,2,3,4], [3], [0,1,2,3,4], [0,1], [0,1,2,4],
+                 [0,2], [0,2], [0,2], [0,2]]; # no2 2voc 3nh3 4pm25 5so2 5nox
     #conf.vec4 = ('1step_SURF_ug_NO2','1step_SURF_ug_PM25_rh50','1step_SURF_ug_PM10_rh50','1SURF_ppb_O3','1SURF_ppb_MAXO3','1SURF_ppb_NOx'); #not used anymore
     aqiFil = conf.vec1[conf.POLLSEL];
 

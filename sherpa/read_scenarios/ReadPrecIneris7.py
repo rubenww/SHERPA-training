@@ -24,6 +24,8 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
         precVec = ['E_NOx_sumsec','E_VOC_sumsec','E_NH3_sumsec','E_PM25_sumsec','E_SO2_sumsec'];
     elif (conf.domain == 'EMEP_45_CAMSv80_01005'):
         precVec = ['Sec_Emis_mgm2_nox','Sec_Emis_mgm2_voc','Sec_Emis_mgm2_nh3','Sec_Emis_mgm2_pm25','Sec_Emis_mgm2_sox'];
+    elif ('emep' in conf.domain):
+        precVec = ['Sec_Emis_mgm2_nox','Sec_Emis_mgm2_voc','Sec_Emis_mgm2_nh3','Sec_Emis_mgm2_pm25','Sec_Emis_mgm2_sox'];
 
 
     flagLL = 0;
@@ -39,7 +41,7 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
         for pre in range(0, nPrec):
             #store latlon
             if flagLL==0:
-                if (platform.system() == 'Windows') & ('cams' in conf.domain):
+                if (platform.system() == 'Windows') & ('emep' in conf.domain):
                     lat = np.squeeze(fh.variables['lat'][:]).transpose();
                     lon = np.squeeze(fh.variables['lon'][:]).transpose();
                     ny = lat.shape[0];
