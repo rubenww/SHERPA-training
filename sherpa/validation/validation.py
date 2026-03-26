@@ -191,11 +191,11 @@ def validation(conf):
 ####
         
         
-        thresGraphs=1
-        cs.CreateScatter(conf.IndicBC,conf.Indic[:,:,iSc],output,flagRegioMat,iSc,nx,ny,nameDirOut,conf.aqi,conf.absDel,conf.domain,conf,thresGraphs);
+        #thresGraphs=1
+        #cs.CreateScatter(conf.IndicBC,conf.Indic[:,:,iSc],output,flagRegioMat,iSc,nx,ny,nameDirOut,conf.aqi,conf.absDel,conf.domain,conf,thresGraphs);
         
         # creating maps
-        cm.CreateMap(conf.IndicBC,conf.Indic[:,:,iSc],output,flagRegioMat,conf.x,conf.y,iSc,nameDirOut,conf.aqi,conf.absDel,conf.flagReg,conf.domain,conf,thresGraphs);
+        #cm.CreateMap(conf.IndicBC,conf.Indic[:,:,iSc],output,flagRegioMat,conf.x,conf.y,iSc,nameDirOut,conf.aqi,conf.absDel,conf.flagReg,conf.domain,conf,thresGraphs);
         #close all
         
         outputSherpa[:,:,iSc] = output;

@@ -45,7 +45,7 @@ def saveToNetcdf(alpha,alpha_lb_ci,alpha_ub_ci,omega,flatWeight,x,y,nameDirOut,a
     ncid = cdf.Dataset(ncfile, 'w', format='NETCDF3_CLASSIC');
     latDimId = ncid.createDimension("latitude", latitude.shape[0]);
     lonDimId = ncid.createDimension("longitude", longitude.shape[1]);
-    pollDimId = ncid.createDimension("pollutant", 5);
+    pollDimId = ncid.createDimension("pollutant", nPrec);
     
     varid_lat = ncid.createVariable("lat","f8",('latitude','longitude'));
     varid_lon = ncid.createVariable("lon","f8",('latitude','longitude'));

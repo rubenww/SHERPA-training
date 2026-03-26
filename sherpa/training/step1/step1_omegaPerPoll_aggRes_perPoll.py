@@ -45,7 +45,7 @@ def step1_omegaOptimization(conf):
     ny = int(conf.ny/4);           
     nx = int(conf.nx/4);
     rad = conf.radStep1;
-    nPrec = 5#len(conf.vec3[conf.POLLSEL])#conf.nPrec;
+    nPrec = conf.nPrec
     rf = conf.rf1
     flagRegioMat = np.copy(conf.flagRegioMat);
 
@@ -61,7 +61,7 @@ def step1_omegaOptimization(conf):
     # flagPerNoxPP??m = f7.from7to28(flagPerNoxPPm);
 
     #initialize variables
-    omega = np.full([ny,nx,nPrec],1.5);
+    omega = np.full([ny,nx,nPrec],conf.omega_guess);
     alpha = np.full([ny,nx,nPrec],np.nan);
     ci2 = np.empty((nPrec), dtype=object);
     CovB2 = np.empty((nPrec), dtype=object);
@@ -69,7 +69,12 @@ def step1_omegaOptimization(conf):
 #    omegaTmp = np.zeros((categories.size));
 
     #define training scenarios; note scenarios number is +1 if checking DoE...as in line 74 it is -1
-    if conf.domain == 'emep10km':
+    if conf.domain == 'emep4nl_2025':
+        # conf.Order_Pollutant = '0=NOx, 1=NMVOC, 2=NH3, 3=PPM2.5, 4=PPMco, 5=SOx'
+        # TODO: NMVOC
+        # = run number - 1
+        IdeVec = (np.array([1, 3]),np.array([1, 3]),np.array([1, 2]),np.array([1, 5]),np.array([1, 6]),np.array([1, 4]));
+    elif conf.domain == 'emep10km':
         if conf.aqi == 'SURF_ug_PM25_rh50-Yea':
             IdeVec = (np.array([1, 1]),np.array([1, 2]),np.array([1, 3]),np.array([1, 5]),np.array([1, 6]));
         elif conf.aqi == 'SURF_ug_PM10_rh50-Yea':
@@ -81,7 +86,7 @@ def step1_omegaOptimization(conf):
         IdeVec = (np.array([1, 1]), np.array([1, 2]), np.array([1, 3]), np.array([1, 4]), np.array([1, 5]));
 
     #loop over precursors
-    for precursor in range(0, 5):
+    for precursor in conf.PrecToBeUsed:
         
         PREC = precursor;
         Ide = IdeVec[precursor];
@@ -93,7 +98,7 @@ def step1_omegaOptimization(conf):
         # bnds = ((0, 1), (1.75, 2.5)) #20220524, used for NO2 and NO
         
         #VERSION USED FOR ALL TESTS IN 2025 
-        bnds = ((0, 1), (1.75, 2)) #20220524, used for NO2 and NO
+        bnds = ((None, None), (conf.omega_guess-0.15, conf.omega_guess+0.15)) #20220524, used for NO2 and NO
         #bnds = ((0, 1), (1.5, 3)) #20220524, used for NO2 and NO
         #VERSION USED FOR ALL TESTS IN 2025 
         
@@ -104,11 +109,9 @@ def step1_omegaOptimization(conf):
 #        IndicEq = np.zeros((numcells,1));
 #        latVec =  np.zeros((numcells,1));
 
-        print('precursor: '+str(PREC));
+        print('precursor: '+str(PREC), flush=True);
 
         for ic in range(0, nx):
-            print(PREC, ic);
-
             for ir in range(0, ny):
                 if flagRegioMat[ir,ic]>0:
                     #variable to store which group ot be considered
@@ -127,7 +130,7 @@ def step1_omegaOptimization(conf):
 
 #                    remInd = (tmpInde>0).flatten()
                     i=1
-                    x0 = [1, 2]; #20220314 - test with different IC
+                    x0 = [1, conf.omega_guess]; #20220314 - test with different IC
 #                    print(remInd)
 
 #                    inp1 = tmpPrec[remInd]#[ind,:];
@@ -148,28 +151,31 @@ def step1_omegaOptimization(conf):
                     # print(mdl.x[1])
                     alpha[ir,ic,PREC] = mdl.x[0];
                     omega[ir,ic,PREC] = mdl.x[1];
+
+            print("{}/{} {}/{}: alpha: {:.2e} ; omega: {:.2f}".format(PREC+1, conf.nPrec, ic+1, nx, np.nanmean(alpha[:,ic,PREC]), np.nanmean(omega[:,ic,PREC])), flush=True);
         
     #rescale to initial spatial resolution, through nearest interpolation
     #initialize variable
     
     conf.omegaFinalStep1_notFiltered = omega
 
-    omegaFinal2 = np.zeros((conf.Prec.shape[0], conf.Prec.shape[1], 5));
+    omegaFinal2 = np.zeros((conf.Prec.shape[0], conf.Prec.shape[1], conf.nPrec));
 
     for i in range(0, nPrec):
         for irAgg in range(0, ny):
             for icAgg in range(0, nx):
                 omegaFinal2[irAgg * 4:irAgg * 4 + 4, icAgg * 4:icAgg * 4 + 4, i] = omega[irAgg, icAgg, i]
-        print('precursor interpolated: ' + str(i));
+        print('precursor interpolated: ' + str(i), flush=True);
 
     # omegaFinal = omegaFinal2
     omegaFinal = np.zeros_like(omegaFinal2)
-    for i in range(0, 5):
+    for i in range(0, conf.nPrec):
         tmp = omegaFinal2[:, :, i]
-        tmp = gf.gaussian_filter(tmp, sigma=5)
+        tmp = gf.gaussian_filter(tmp, sigma=5, mode="nearest")
         omegaFinal[:, :, i] = tmp
 
-    omegaFinal = np.round(omegaFinal, 1)
+    # round for the lookup table
+    omegaFinal = np.round(omegaFinal, 2)
     # omegaFinal = q.quant(omegaFinal, 0.2)  # discretize
     
     #keep only results on the mask
@@ -178,10 +184,6 @@ def step1_omegaOptimization(conf):
     conf.omegaFinalStep1 = omegaFinal;
     conf.ci2Step1 = [];
     conf.CovB2Step1 = [];
-    
-    
-    
-    
 #    
 #    
 #    

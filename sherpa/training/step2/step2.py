@@ -9,9 +9,6 @@ import scipy.io as sio
 import statsmodels.formula.api as smf
 import time
 from sherpa.training import funcAggreg as fa
-from sklearn.linear_model import Ridge
-from sklearn.linear_model import Lasso
-from sklearn.linear_model import ElasticNet
 from sklearn import linear_model
 from sherpa.training import distanceComputation as dc
 import numexpr as ne
@@ -20,7 +17,7 @@ import multiprocessing as mp
 import statsmodels.api as sm
 
 def computeOutput(ir,ic,rad,Prec,omega,PrecToBeUsed,vecPrecompF,Indic,Ide,poly,lat):
-    print('Regression for ' + str(ir) + ', ' +str(ic))
+    print('Regression for ' + str(ir) + ', ' +str(ic), flush=True)
     dimrad = rad*2+1;
 
     ratio = np.polyval(poly,lat[ir,ic])
@@ -65,7 +62,7 @@ def step2(conf):
     omega = conf.omegaFinalStep1;
 
     #on nan put average omega per pollutant   
-    for poll in range(0, 5):
+    for poll in range(0, nPrec):
         tmpMat=omega[:,:,poll]
         uniqueomega = np.unique(tmpMat[np.isfinite(tmpMat)])
         aomega = uniqueomega.mean()
@@ -91,18 +88,18 @@ def step2(conf):
     flatWeight = np.zeros((ny,nx,nPrec));
 
     #initialize variables
-    alpha = np.full([ny,nx,5],np.nan);
+    alpha = np.full([ny,nx,nPrec],np.nan);
     
     #add alpha with LB_CI, UP_CI
-    alpha_lb_ci = np.full([ny,nx,5],np.nan);
-    alpha_ub_ci = np.full([ny,nx,5],np.nan);
+    alpha_lb_ci = np.full([ny,nx,nPrec],np.nan);
+    alpha_ub_ci = np.full([ny,nx,nPrec],np.nan);
     
-    flatWeight = np.zeros((ny,nx,5));
+    flatWeight = np.zeros((ny,nx,nPrec));
     XMin = np.zeros((ny,nx,nPrec));
     XMax = np.zeros((ny,nx,nPrec));
     yMin = np.full([ny,nx],np.nan);
     yMax = np.full([ny,nx],np.nan);
-    bInt = np.full([ny,nx,5,2],np.nan);
+    bInt = np.full([ny,nx,nPrec,2],np.nan);
     
     IndicEq = np.zeros((len(Ide),1));
 
@@ -111,7 +108,7 @@ def step2(conf):
     
     #loop over cells to create alpha
     for ic in range(0, nx):
-        print('Creating regression on x: _'+str(ic)+' of _'+str(nx));
+        print('Creating regression on x: _'+str(ic)+' of _'+str(nx), flush=True);
         for ir in range(0, ny):
             if flagRegioMat[ir,ic]==1:
                 dimrad = rad*2+1;
@@ -136,12 +133,13 @@ def step2(conf):
                 PrecPatch = (ne.evaluate('PrecDummyQuad*F')).sum((0, 1));
                 IndicEq[:, 0] = Indic[ir, ic, Ide];
                 # regr = linear_model.LinearRegression()
-                regr = linear_model.LinearRegression(fit_intercept=False)
+                #regr = linear_model.LinearRegression(fit_intercept=False, n_jobs=10)
                 # regr = linear_model.Ridge(alpha=0.01, fit_intercept=False)
-                regr.fit(PrecPatch, IndicEq)                
-                alpha[ir,ic,[PrecToBeUsed]] = regr.coef_
+                #regr.fit(PrecPatch, IndicEq)                
+                #alpha[ir,ic,[PrecToBeUsed]] = regr.coef_
                 
-                lr = sm.OLS(IndicEq, PrecPatch).fit()
+                lr = sm.OLS(IndicEq, PrecPatch, missing='drop', hasconst=False).fit()
+                alpha[ir,ic,[PrecToBeUsed]] = lr.params
                 conf_interval = lr.conf_int(0.05)
                 
                 #save alpha CI

@@ -18,15 +18,10 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
     elif (conf.domain == 'emepV433_camsV221') | (conf.domain == 'edgar2015') | (conf.domain == 'emepV434_camsV42') \
         | ('cams' in conf.domain):
         precVec = ['Sec_Emis_mgm2_nox','Sec_Emis_mgm2_voc','Sec_Emis_mgm2_nh3','Sec_Emis_mgm2_pm25','Sec_Emis_mgm2_sox'];
-    elif (conf.domain == 'emep4nl_2021'):
-        precVec = ['Sec_Emis_mgm2_nox','Sec_Emis_mgm2_voc','Sec_Emis_mgm2_nh3','Sec_Emis_mgm2_pm25','Sec_Emis_mgm2_sox'];
+    elif (conf.domain == 'emep4nl_2021') or (conf.domain == 'emep4nl_2025'):
+        precVec = ['Sec_Emis_mgm2_nox','Sec_Emis_mgm2_voc','Sec_Emis_mgm2_nh3','Sec_Emis_mgm2_pm25','Sec_Emis_mgm2_pmco','Sec_Emis_mgm2_sox'];
     elif ('wrf' in conf.domain):
         precVec = ['E_NOx_sumsec','E_VOC_sumsec','E_NH3_sumsec','E_PM25_sumsec','E_SO2_sumsec'];
-    elif (conf.domain == 'EMEP_45_CAMSv80_01005'):
-        precVec = ['Sec_Emis_mgm2_nox','Sec_Emis_mgm2_voc','Sec_Emis_mgm2_nh3','Sec_Emis_mgm2_pm25','Sec_Emis_mgm2_sox'];
-    elif ('emep' in conf.domain):
-        precVec = ['Sec_Emis_mgm2_nox','Sec_Emis_mgm2_voc','Sec_Emis_mgm2_nh3','Sec_Emis_mgm2_pm25','Sec_Emis_mgm2_sox'];
-
 
     flagLL = 0;
     
@@ -39,11 +34,17 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
         fh = cdf.Dataset(fileName, mode='r');
                         
         for pre in range(0, nPrec):
+            latName = 'lat'
+            if not ('lat' in fh.variables.keys()) and ('latitude' in fh.variables.keys()):
+                latName = 'latitude'
+            longName = 'lon'
+            if not ('lon' in fh.variables.keys()) and ('longitude' in fh.variables.keys()):
+                longName = 'longitude'
             #store latlon
             if flagLL==0:
-                if (platform.system() == 'Windows') & ('emep' in conf.domain):
-                    lat = np.squeeze(fh.variables['lat'][:]).transpose();
-                    lon = np.squeeze(fh.variables['lon'][:]).transpose();
+                if (platform.system() == 'Windows') & ('cams' in conf.domain):
+                    lat = np.squeeze(fh.variables[latName][:]).transpose();
+                    lon = np.squeeze(fh.variables[longName][:]).transpose();
                     ny = lat.shape[0];
                     nx = lon.shape[0];
                     lat = np.kron(np.ones((nx, 1)), np.flipud(lat.transpose())).transpose();
@@ -51,8 +52,8 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
                     flagLL=1;
                 if (platform.system() == 'Windows') & ('wrf' in conf.domain):
                     
-                    lat = np.flipud(fh.variables['lat'][:])
-                    lon = np.flipud(fh.variables['lon'][:])
+                    lat = np.flipud(fh.variables[latName][:])
+                    lon = np.flipud(fh.variables[longName][:])
                     
                     ny = lat.shape[0];
                     nx = lon.shape[0];
@@ -61,15 +62,14 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
                         lat = np.tile(lat,(nx,1)).T
                         lon = np.fliplr(np.tile(lon,(ny,1)))
                 elif (platform.system() == 'Linux'):
-                    lat = np.squeeze(fh.variables['lat'][:]).transpose();
-                    lon = np.squeeze(fh.variables['lon'][:]).transpose();
+                    lat = np.squeeze(fh.variables[latName][:]).transpose();
+                    lon = np.squeeze(fh.variables[longName][:]).transpose();
+
                     ny = lat.shape[0];
                     nx = lon.shape[0];
                     lat = np.kron(np.ones((nx, 1)), np.flipud(lat.transpose())).transpose();
                     lon = np.kron(np.ones((ny, 1)), lon.transpose());
                     flagLL=1;
-
-
                 Prec = np.zeros((ny,nx,nSc,nPrec));        
             
             #read variable                       
@@ -88,11 +88,13 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
                 elif conf.whichmonth=='ONDJFM':
                     tmpMat = np.sum(tmpMat[:,:,[0,1,2,9,10,11]], axis=2)    
                     
-
-            #convert from mg/km2 to ton/grid - this is the case for CAMS-EMEP, and EDGAR                  
+            #convert from mg/m2 to ton/km2 - this is the case for CAMS-EMEP, and EDGAR                  
             tmpMat = tmpMat/1000
             
             #convert in case of total emissions     
+            if conf.domain == 'ineris7km':
+                surfaceValues = fh.variables['surface']; # read surface values
+            
             if emiDenAbs==1: # from ton/km2 to ton/cell
                 surfaceValues = np.squeeze(fh.variables['Area_Grid_km2'][:]).transpose();  # read surface values
                 #to kton/km2 dividing by 100, to kton/year multiplying by the area
@@ -125,14 +127,12 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
         elif ('wrf' in conf.domain):
             precVec = ['E_PPMco_sumsec'];
 
-
         flagLL=0;
         for sce in range(0, nSc):
             fileName = conf.scenEmissionFileName(sce); #'input/'+domain+'/2010Cle_TSAP_Dec_2013_JRC'+sces+'_07b_2009/JRC'+sces+'.nc';
             fh = cdf.Dataset(fileName, mode='r');
             for pre in range(3, 4):
                 tmpMat = np.squeeze(fh.variables[precVec[0]][:]).transpose();
-                
             if conf.yearmonth==1: #case for monthly values
                 if conf.whichmonth=='DJF':
                     tmpMat = np.sum(tmpMat[:,:,[0,1,11]], axis=2)
@@ -146,8 +146,7 @@ def ReadPrecIneris7(nSc,nPrec,domain,absdel,POLLSEL,emiDenAbs,aqiFil,conf):
                     tmpMat = np.sum(tmpMat[:,:,[3,4,5,6,7,8]], axis=2)    
                 elif conf.whichmonth=='ONDJFM':
                     tmpMat = np.sum(tmpMat[:,:,[0,1,2,9,10,11]], axis=2)    
- 
-                        
+                
                 #convert from mg/m2 to ton/km2 - this is the case for CAMS-EMEP, and EDGAR                  
                 tmpMat = tmpMat/1000
     
