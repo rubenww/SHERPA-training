@@ -64,7 +64,7 @@ def step2(conf):
     #on nan put average omega per pollutant   
     for poll in range(0, nPrec):
         tmpMat=omega[:,:,poll]
-        tmpMat[np.isnan(tmpMat)] = np.nanmean(tmpMat)
+        tmpMat[np.isnan(tmpMat)] = np.nanmean(tmpMat[np.isfinite(tmpMat)])
         omega[:,:,poll] = tmpMat
     
     #create output dir
