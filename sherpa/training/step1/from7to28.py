@@ -5,15 +5,14 @@ downscale resolution, it works with different dimensions of the input file
 '''
 import numpy as np
 
-def from7to28(Prec):
-    step = 4;
+def from7to28(Prec, step=4):
     percNumDim = len(Prec.shape);
     
     if percNumDim == 2:
         d1 = Prec.shape[0];
         d2 = Prec.shape[1];
-        p1 = int(d1/4);
-        p2 = int(d2/4);
+        p1 = int(round(d1/step))
+        p2 = int(round(d2/step))
         Prec28 = np.zeros((p1, p2));
         
         for i in range(0, p1):
@@ -32,8 +31,8 @@ def from7to28(Prec):
         d1 = Prec.shape[0];
         d2 = Prec.shape[1];
         d3 = Prec.shape[2];
-        p1 = int(d1/4);
-        p2 = int(d2/4);
+        p1 = int(round(d1/step))
+        p2 = int(round(d2/step))
         Prec28 = np.zeros((p1, p2, d3));
         
         for dimVar in range(0, d3):
@@ -54,8 +53,8 @@ def from7to28(Prec):
         d2 = Prec.shape[1];
         d3 = Prec.shape[2];
         d4 = Prec.shape[3];
-        p1 = int(d1/4);
-        p2 = int(d2/4);
+        p1 = int(round(d1/step));
+        p2 = int(round(d2/step));
         Prec28 = np.zeros((p1, p2, d3, d4));
         
         for poll in range(0, d4):

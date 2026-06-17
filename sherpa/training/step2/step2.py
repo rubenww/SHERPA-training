@@ -64,10 +64,8 @@ def step2(conf):
     #on nan put average omega per pollutant   
     for poll in range(0, nPrec):
         tmpMat=omega[:,:,poll]
-        uniqueomega = np.unique(tmpMat[np.isfinite(tmpMat)])
-        aomega = uniqueomega.mean()
-        tmpMat[np.isnan(tmpMat)] = aomega;
-        omega[:,:,poll] = tmpMat;
+        tmpMat[np.isnan(tmpMat)] = np.nanmean(tmpMat)
+        omega[:,:,poll] = tmpMat
     
     #create output dir
     nameDirOut = conf.nameDirOut;

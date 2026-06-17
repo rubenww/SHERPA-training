@@ -5,4 +5,4 @@ export OPENBLAS_NUM_THREADS=$NUM_THREADS
 export MKL_NUM_THREADS=$NUM_THREADS
 export VECLIB_MAXIMUM_THREADS=$NUM_THREADS
 export NUMEXPR_NUM_THREADS=$NUM_THREADS
-python sherpa.py "$@"
+python3 sherpa.py "$@"

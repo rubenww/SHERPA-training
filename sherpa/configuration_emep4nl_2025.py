@@ -8,19 +8,21 @@ import numpy as np
 import platform
 from datetime import datetime
 
+dirprefix = ""
+
 #class configuration defines methods and attributes
 #methods: used to create names of scenarios to be loaded
 class Config:
     def __init__(self):
         # overwritable defaults
-        self.root = '/EMEP/users/verweijr/_EMEP_projects/20250117_schaduw_GCN_EMEP/20260204_SHERPA_SA_runs/training/'
+        self.root = '{}/EMEP/users/verweijr/_EMEP_projects/20250117_schaduw_GCN_EMEP/20260204_SHERPA_SA_runs/training/'.format(dirprefix)
         self.datapath = self.root
         self.run = 'run001'
         self.mode = 'T'
 
     def scenEmissionFileName(self, sce):
         sces = '%03i'%(sce);
-        root = '/EMEP/EMEP/rv4.45/run/schaduw_gcn/for_SHERPA/set01/sce'+sces+'.nc'
+        root = '{}/EMEP/EMEP/rv4.45/run/schaduw_gcn/for_SHERPA/set01/sce'.format(dirprefix)+sces+'.nc'
         return root
     def scenConcFileName(self, sce):
         return self.scenEmissionFileName(sce)
@@ -39,10 +41,10 @@ def configuration(conf, chooseModel, chooseOpt, time_resol, time_loop, aqi_selec
     conf.gf = 0
     conf.rf1 = 5 # window of cells of training varying F (1=one ring of cells used for training, surrounding the target cell0
     conf.rf2 = 0
-    fac1 = conf.rf1 if conf.rf1 > 0 else 1
-    conf.radStep1 = int(round(1000/2/fac1)); # number of cells to be considered in step1
-    fac2 = conf.rf2 if conf.rf2 > 0 else 1
-    conf.radStep2 = int(round(1000/2/fac2)); # number of cells to be considered in step2
+    res_step = 4 # also set in step 1: resolution coarsening step factor (corresponds to ~level 03 resolution)
+    ndomain = 500
+    conf.radStep1 = int(round(ndomain/res_step)) # number of cells to be considered in step1
+    conf.radStep2 = ndomain # number of cells to be considered in step2
     conf.vec1 = [
             'SURF_ug_NH3', # 0
             'SURF_ug_NH4_F', # 1
@@ -65,7 +67,9 @@ def configuration(conf, chooseModel, chooseOpt, time_resol, time_loop, aqi_selec
             'SURF_ug_NO3_C', # 18
             'SURF_ug_HNO3', # 19
             'DDEP_OXN_m2Grid', # 20
-            'WDEP_OXN' # 21
+            'WDEP_OXN', # 21
+            'DDEP_NH3_m2Grid', # 22
+            'DDEP_NH4_f_m2Grid', # 23
                  ]
     conf.vec3 = [
             [0,2,5], # 0
@@ -89,7 +93,9 @@ def configuration(conf, chooseModel, chooseOpt, time_resol, time_loop, aqi_selec
             [0,2,5], # 18
             [0,2,5], # 19
             [0,2,5], # 20
-            [0,2,5] # 21
+            [0,2,5], # 21
+            [0,2,5], # 22
+            [0,2,5] # 23
             ]
 
     conf.vec2 = conf.vec1

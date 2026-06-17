@@ -39,11 +39,11 @@ def iop(beta,inp1,inp2,rad, latVecFilt, poly):
 
 
 def step1_omegaOptimization(conf):
-
+    res_step = 4
     #convert from 28 to 7 km
-    Prec = f7.from7to28(conf.Prec);
-    ny = int(conf.ny/4);           
-    nx = int(conf.nx/4);
+    Prec = f7.from7to28(conf.Prec, res_step);
+    ny = int(round(conf.ny/res_step))
+    nx = int(round(conf.nx/res_step))
     rad = conf.radStep1;
     nPrec = conf.nPrec
     rf = conf.rf1
@@ -55,10 +55,10 @@ def step1_omegaOptimization(conf):
     Prec=Prec2;
 
     #convert from 28 to 7 km
-    Indic = f7.from7to28(conf.Indic);
-    flagRegioMat = f7.from7to28(flagRegioMat);
-    lat = f7.from7to28(conf.y);
-    # flagPerNoxPP??m = f7.from7to28(flagPerNoxPPm);
+    Indic = f7.from7to28(conf.Indic, res_step);
+    flagRegioMat = f7.from7to28(flagRegioMat, res_step);
+    lat = f7.from7to28(conf.y, res_step);
+    # flagPerNoxPP??m = f7.from7to28(flagPerNoxPPm, res_step);
 
     #initialize variables
     omega = np.full([ny,nx,nPrec],conf.omega_guess);
@@ -164,10 +164,20 @@ def step1_omegaOptimization(conf):
     for i in range(0, nPrec):
         for irAgg in range(0, ny):
             for icAgg in range(0, nx):
-                omegaFinal2[irAgg * 4:irAgg * 4 + 4, icAgg * 4:icAgg * 4 + 4, i] = omega[irAgg, icAgg, i]
+                omegaFinal2[irAgg * res_step:irAgg * res_step + res_step, icAgg * res_step:icAgg * res_step + res_step, i] = omega[irAgg, icAgg, i]
         print('precursor interpolated: ' + str(i), flush=True);
 
-    # omegaFinal = omegaFinal2
+    #keep only results on the mask
+    omegaFinal2[conf.flagRegioMat==0] =np.nan    
+
+    #on nan put average omega per pollutant before gaussian filter, to prevent edge effects
+    for poll in range(0, nPrec):
+        tmpMat=omegaFinal2[:,:,poll]
+        mean_omega = np.nanmean(tmpMat)
+        print("Poll {} ; omega = {}".format(poll, round(mean_omega, 2)))
+        tmpMat[np.isnan(tmpMat)] = mean_omega
+        omegaFinal2[:,:,poll] = tmpMat
+
     omegaFinal = np.zeros_like(omegaFinal2)
     for i in range(0, conf.nPrec):
         tmp = omegaFinal2[:, :, i]
@@ -184,34 +194,3 @@ def step1_omegaOptimization(conf):
     conf.omegaFinalStep1 = omegaFinal;
     conf.ci2Step1 = [];
     conf.CovB2Step1 = [];
-#    
-#    
-#    
-#    
-#    omegaFinal = np.zeros((conf.Prec.shape[0],conf.Prec.shape[1],5));
-#
-#    for i in range(0,5):
-#        omegaFinal[:,:,i] = np.unique(omega[:,:,i])[0]
-#
-#    #loop on precursors
-#    # for i in range(0, nPrec):
-#    #     #define interpolator object
-#    #     xgv = np.arange(1., conf.Prec.shape[0]/4+1);
-#    #     ygv = np.arange(1., conf.Prec.shape[1]/4+1);
-#    #     F=interpol.RegularGridInterpolator((xgv, ygv), omega[:,:,i],method='nearest',bounds_error=False, fill_value=None);
-#    #
-#    #     #interpolate
-#    #     Xq = np.arange(1., conf.Prec.shape[0]/4+1, 1/4);
-#    #     Yq = np.arange(1., conf.Prec.shape[1]/4+1, 1/4);
-#    #     [Y2,X2] = np.meshgrid(Yq, Xq);
-#    #     pts=((X2.flatten(),Y2.flatten()))
-#    #     omegaFinal[:,:,i] = F(pts).reshape(conf.Prec.shape[0],conf.Prec.shape[1])
-#    #     print('precursor interpolated: '+str(i));
-#
-#    #store final results
-#    # replacingVal = np.unique(omegaFinal[:,:,whichPollToUpdate][~np.isnan(omegaFinal[:,:,whichPollToUpdate])])
-#    # conf.omegaFinalStep1[:,:,whichPollToUpdate] = replacingVal#omegaFinal[:,:,whichPollToUpdate];
-#    conf.omegaFinalStep1 = omegaFinal
-#    # conf.omegaFinalStep1_28km = omegaFinal
-#    conf.ci2Step1 = ci2;
-#    conf.CovB2Step1 = CovB2;
