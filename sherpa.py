@@ -43,11 +43,15 @@ start_time_loop = 0; end_time_loop = 1 #0,1 means you run only yearly values - 0
 # aqi_to_be_tested = list([5])
 
 #20230206 standard optimization to be performed
-chooseOpt = 'step1_omegaPerPoll_aggRes_perPoll'        
+# chooseOpt = 'step1_omegaPerPoll_aggRes_perPoll'        
+# chooseOpt = 'step1_omegaPerPoll_fixed'        
+chooseOpt = 'step1_omegaPerPoll_fixed_mean'        
+# chooseOpt = 'step1_omegaPerPoll_fixed_mean_mask'        
 
 #20230206 only emepV434_camsV42withCond_01005_month is currently used
 if chooseModel == 'rivm':
-    import sherpa.configuration_emep4nl_2025 as c
+    #import sherpa.configuration_emep4nl_2025 as c
+    import sherpa.configuration_emep4nl_2025_l03 as c
 elif chooseModel == 'emep10km':
     import sherpa.configuration_emep as c
 elif chooseModel == 'emepV434_camsV42withCond_01005_month':
@@ -86,6 +90,12 @@ elif chooseOpt == 'step1_omegaPerPoll_aggRes_perPoll':
     import sherpa.training.step1.step1_omegaPerPoll_aggRes_perPoll as s1
 elif chooseOpt == 'step1_omegaPerPoll_aggRes_perPoll_ch':
     import sherpa.training.step1.step1_omegaPerPoll_aggRes_perPoll_CH as s1
+elif chooseOpt == 'step1_omegaPerPoll_fixed':
+    import sherpa.training.step1.step1_omegaPerPoll_fixed as s1
+elif chooseOpt == 'step1_omegaPerPoll_fixed_mean':
+    import sherpa.training.step1.step1_omegaPerPoll_fixed_mean as s1
+elif chooseOpt == 'step1_omegaPerPoll_fixed_mean_mask':
+    import sherpa.training.step1.step1_omegaPerPoll_fixed_mean_mask as s1
 
 __all__ = []
 __version__ = 0.1
@@ -111,8 +121,8 @@ def main(argv=None):
     parser.add_option("-p", "--path", dest="datapath", help="set data path [default: %default]", metavar="DIR")
     parser.add_option("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %default]")
     parser.add_option("-m", "--mode", dest="mode", help="set mode (T:training and validation, V:validation) [default: %default]")
-    parser.add_option("-i", "--indicator", dest="indicator", help="set indicators to be trained", action='append', type='int')
-    parser.add_option("-o", "--omega", dest="omega", help="initial omega", type='float')
+    parser.add_option("-i", "--indicator", dest="indicator", help="set indicators to be trained", type='int', action='append')
+    parser.add_option("-o", "--omega", dest="omega", help="initial omega", type='float', action='append')
     parser.add_option("-r", "--run", dest="run", help="run name", type='string')
 
     # for defaults

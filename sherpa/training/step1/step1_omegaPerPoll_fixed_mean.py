@@ -29,8 +29,7 @@ def InvDistN_opt_prec(beta,xdata,rad,latVecFilt, poly):
 
 def iop(beta,inp1,inp2,rad, latVecFilt, poly):
     x=InvDistN_opt_prec(beta,inp1,rad,latVecFilt, poly)
-    y=inp2
-    y=y.flatten().T
+    y=inp2.flatten().T
 #    print(x)
 #    print(y)
 #    print(sqrt(mean_squared_error(y, x)))
@@ -39,7 +38,7 @@ def iop(beta,inp1,inp2,rad, latVecFilt, poly):
 
 
 def step1_omegaOptimization(conf):
-    res_step = 4
+    res_step = 1
     #convert from 28 to 7 km
     Prec = f7.from7to28(conf.Prec, res_step);
     ny = int(round(conf.ny/res_step))
@@ -54,6 +53,8 @@ def step1_omegaOptimization(conf):
     Prec2[rad:-rad,rad:-rad,:,:] = Prec[:,:,:,:];
     Prec=Prec2;
 
+    print("res_step={}; nx={}; ny={}; rf={}; rad={}".format(res_step, nx, ny, rf, rad), flush=True)
+
     #convert from 28 to 7 km
     Indic = f7.from7to28(conf.Indic, res_step);
     flagRegioMat = f7.from7to28(flagRegioMat, res_step);
@@ -61,10 +62,7 @@ def step1_omegaOptimization(conf):
     # flagPerNoxPP??m = f7.from7to28(flagPerNoxPPm, res_step);
 
     #initialize variables
-    omega = np.full([ny,nx,nPrec],conf.omega_guess);
-    alpha = np.full([ny,nx,nPrec],np.nan);
-    ci2 = np.empty((nPrec), dtype=object);
-    CovB2 = np.empty((nPrec), dtype=object);
+    omega = np.full([ny,nx,nPrec],np.nan);
 #    alphaTmp = np.zeros((categories.size));
 #    omegaTmp = np.zeros((categories.size));
 
@@ -86,10 +84,17 @@ def step1_omegaOptimization(conf):
         IdeVec = (np.array([1, 1]), np.array([1, 2]), np.array([1, 3]), np.array([1, 4]), np.array([1, 5]));
 
     #loop over precursors
-    for precursor in conf.PrecToBeUsed:
+    print('precursors: {}'.format(conf.PrecToBeUsed), flush=True)
+    print('omega: {}'.format(conf.omega_guess), flush=True)
+    if len(conf.omega_guess) != len(conf.PrecToBeUsed):
+        print('wrong number of initial omegas!', flush=True)
+        exit()
+
+    for pi, precursor in enumerate(conf.PrecToBeUsed):
         
         PREC = precursor;
         Ide = IdeVec[precursor];
+        nSc = Ide.shape[0]-1;# size(Ide,2)-1
 #        icel = 0;
         
         #20220414, test with decreased bounds
@@ -98,8 +103,7 @@ def step1_omegaOptimization(conf):
         # bnds = ((0, 1), (1.75, 2.5)) #20220524, used for NO2 and NO
         
         #VERSION USED FOR ALL TESTS IN 2025 
-        #bnds = ((None, None), (conf.omega_guess-0.001, conf.omega_guess+0.001)) # RV: essentially fixed
-        bnds = ((None, None), (conf.omega_guess-0.15, conf.omega_guess+0.15)) # RV: default so far
+        bnds = ((None, None), (conf.omega_guess[pi]-0.1, conf.omega_guess[pi]+0.1)) # RV: default so far
         #bnds = ((0, 1), (1.5, 3)) #20220524, used for NO2 and NO
         #VERSION USED FOR ALL TESTS IN 2025 
         
@@ -110,88 +114,33 @@ def step1_omegaOptimization(conf):
 #        IndicEq = np.zeros((numcells,1));
 #        latVec =  np.zeros((numcells,1));
 
-        print('precursor: '+str(PREC), flush=True);
+        print('precursor: {} {:.2f}'.format(PREC, conf.omega_guess[pi]), flush=True)
 
         for ic in range(0, nx):
             for ir in range(0, ny):
                 if flagRegioMat[ir,ic]>0:
-                    #variable to store which group ot be considered
-#                    indexUsed[icel] = np.where(val==potency[ir,ic]);
-
                     #create data for omega calculation
-                    nSc = Ide.shape[0]-1;# size(Ide,2)-1
                     tmpPrec = ep.EquaPrec(ic,ir,rf,nx,ny,nSc,Prec.shape[3],Prec[:,:,Ide[1],PREC],rad); # patches
                     tmpInde = ei.EquaIndic(ic,ir,rf,nx,ny,nSc,Indic[:,:,Ide[1]]); # indicator
+                    mdl = minimize(iop, [1, conf.omega_guess[pi]], args=(tmpPrec, tmpInde, rad, lat[ir,ic], conf.ratioPoly), bounds=bnds, method='SLSQP', options={'disp': False})  # L-BFGS-B, TNC
+                    omega[ir,ic,PREC] = mdl.x[1]
 
-                    #store data for omega calculation
-#                    PrecPatch[icel,:] = tmpPrec; #np.squeeze(tmpPrec)
-#                    IndicEq[icel] = tmpInde;
-                    latVec = lat[ir,ic]
-#                    icel = icel+1;
-
-#                    remInd = (tmpInde>0).flatten()
-                    i=1
-                    x0 = [1, conf.omega_guess]; #20220314 - test with different IC
-#                    print(remInd)
-
-#                    inp1 = tmpPrec[remInd]#[ind,:];
-#                    inp2 = tmpInde[remInd]#[ind];
-                    inp1 = tmpPrec#[ind,:];
-                    inp2 = tmpInde#[ind];
-
-#                    mdl = minimize(iop, x0, args=(inp1, inp2, rad, latVec, conf.ratioPoly), bounds=bnds, method='BFGS', options=opts)  # L-BFGS-B, TNC
-                    opts = {'disp': False}
-#                    mdl = minimize(iop, x0, args=(inp1, inp2, rad, latVec, conf.ratioPoly), method='BFGS', options=opts)  # L-BFGS-B, TNC
-                    
-#                    print(mdl.x)
-                    #mdl = minimize(iop, x0, args=(inp1, inp2, rad, latVec, conf.ratioPoly), bounds=bnds, method='L-BFGS-B', options=opts)  # L-BFGS-B, TNC
-                    #print('L-BFGS-B')
-                    #print(mdl.x[1])
-                    mdl = minimize(iop, x0, args=(inp1, inp2, rad, latVec, conf.ratioPoly), bounds=bnds, method='SLSQP', options=opts)  # L-BFGS-B, TNC
-                    #print('SLSQP')
-                    # print(mdl.x[1])
-                    alpha[ir,ic,PREC] = mdl.x[0];
-                    omega[ir,ic,PREC] = mdl.x[1];
-
-            print("{}/{} {}/{}: alpha: {:.2e} ; omega: {:.2f}".format(PREC+1, conf.nPrec, ic+1, nx, np.nanmean(alpha[:,ic,PREC]), np.nanmean(omega[:,ic,PREC])), flush=True);
+            print("{}/{} {}/{}: omega: {:.2f}".format(PREC+1, conf.nPrec, ic+1, nx, np.nanmean(omega[:,ic,PREC])), flush=True);
         
     #rescale to initial spatial resolution, through nearest interpolation
     #initialize variable
-    
-    conf.omegaFinalStep1_notFiltered = omega
+    omegaFinal = np.zeros((conf.Prec.shape[0], conf.Prec.shape[1], conf.nPrec));
 
-    omegaFinal2 = np.zeros((conf.Prec.shape[0], conf.Prec.shape[1], conf.nPrec));
-
-    for i in range(0, nPrec):
-        for irAgg in range(0, ny):
-            for icAgg in range(0, nx):
-                omegaFinal2[irAgg * res_step:irAgg * res_step + res_step, icAgg * res_step:icAgg * res_step + res_step, i] = omega[irAgg, icAgg, i]
-        print('precursor interpolated: ' + str(i), flush=True);
-
-    #keep only results on the mask
-    omegaFinal2[conf.flagRegioMat==0] =np.nan    
-
-    #on nan put average omega per pollutant before gaussian filter, to prevent edge effects
+    # only save mean omega
     for poll in range(0, nPrec):
-        tmpMat=omegaFinal2[:,:,poll]
-        mean_omega = np.nanmean(tmpMat)
+        mean_omega = np.nanmean(omega[:,:,poll])
         print("Poll {} ; omega = {}".format(poll, round(mean_omega, 2)))
-        tmpMat[np.isnan(tmpMat)] = mean_omega
-        omegaFinal2[:,:,poll] = tmpMat
-
-    omegaFinal = np.zeros_like(omegaFinal2)
-    for i in range(0, conf.nPrec):
-        tmp = omegaFinal2[:, :, i]
-        tmp = gf.gaussian_filter(tmp, sigma=5, mode="nearest")
-        omegaFinal[:, :, i] = tmp
-
-    # round for the lookup table
-    omegaFinal = np.round(omegaFinal, 2)
-    # omegaFinal = q.quant(omegaFinal, 0.2)  # discretize
+        omegaFinal[:,:,poll] = mean_omega
     
     #keep only results on the mask
     omegaFinal[conf.flagRegioMat==0] =np.nan    
     
-    conf.omegaFinalStep1 = omegaFinal;
+    conf.omegaFinalStep1 = omegaFinal
+    conf.omegaFinalStep1_notFiltered = omegaFinal
     conf.ci2Step1 = [];
     conf.CovB2Step1 = [];

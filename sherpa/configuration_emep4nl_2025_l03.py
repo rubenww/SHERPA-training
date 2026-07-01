@@ -15,14 +15,15 @@ dirprefix = ""
 class Config:
     def __init__(self):
         # overwritable defaults
-        self.root = '{}/EMEP/users/verweijr/_EMEP_projects/20250117_schaduw_GCN_EMEP/20260619_PPM2.5_tests/level04/training/'.format(dirprefix)
+        self.root = '{}/EMEP/users/verweijr/_EMEP_projects/20250117_schaduw_GCN_EMEP/20260619_PPM2.5_tests/level03/training/'.format(dirprefix)
         self.datapath = self.root
         self.run = 'run001'
         self.mode = 'T'
 
     def scenEmissionFileName(self, sce):
         sces = '%03i'%(sce);
-        root = '{}/EMEP/EMEP/rv4.45/run/schaduw_gcn/for_SHERPA/set01/sce'.format(dirprefix)+sces+'.nc'
+        #root = '{}/EMEP/EMEP/rv4.45/run/schaduw_gcn/for_SHERPA/set01/sce'.format(dirprefix)+sces+'.nc'
+        root = '{}/EMEP/EMEP/rv4.45/run/schaduw_gcn/for_SHERPA/up_to_l03/sce'.format(dirprefix)+sces+'.nc'
         return root
     def scenConcFileName(self, sce):
         return self.scenEmissionFileName(sce)
@@ -41,8 +42,8 @@ def configuration(conf, chooseModel, chooseOpt, time_resol, time_loop, aqi_selec
     conf.gf = 0
     conf.rf1 = 0 # window of cells of training varying F (1=one ring of cells used for training, surrounding the target cell0
     conf.rf2 = 0
-    res_step = 2 # also set in step 1: resolution coarsening step factor (corresponds to ~level 03 resolution)
-    ndomain = 900
+    res_step = 1 # also set in step 1: resolution coarsening step factor (corresponds to ~level 03 resolution)
+    ndomain = 450 # can be lower
     conf.radStep1 = int(round(ndomain/res_step)) # number of cells to be considered in step1
     conf.radStep2 = ndomain # number of cells to be considered in step2
     conf.vec1 = [
@@ -112,7 +113,7 @@ def configuration(conf, chooseModel, chooseOpt, time_resol, time_loop, aqi_selec
     conf.Ide = np.arange(0,7) #training scenarios: sce(i), excl. last one: i.e. arange(0,3)=[sce000, sce001, sce002]
     conf.Val = np.arange(1,7) #validation scenarios
     conf.nSc = len(conf.Val)+1 #plus the basis run
-    conf.flagRegioMatFile = conf.root+'/../flagRegioMat_NL_2025.nc'#all but #ATL	32	Remaining North-East Atlantic Ocean
+    conf.flagRegioMatFile = conf.root+'flagRegioMat_NL_2025_l03.nc'#all but #ATL	32	Remaining North-East Atlantic Ocean
 
     ###
     conf.nametest = chooseOpt + '_rad' + str(conf.radStep1) + '-' + str(conf.radStep2) + '_rf_' + str(conf.rf1) + '-' + str(conf.rf2) + '-distCelKm-' + str(conf.distance) + 'emiTonKm2'
