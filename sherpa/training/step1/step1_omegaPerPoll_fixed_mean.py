@@ -101,18 +101,11 @@ def step1_omegaOptimization(conf):
         # bnds = ((0, 1), (1.5, 2.5)) #20220524, used for PM25, PM10, O3
         # bnds = ((0, 1), (0.5, 2.5)) #20220524, used for PM25, PM10, O3
         # bnds = ((0, 1), (1.75, 2.5)) #20220524, used for NO2 and NO
+        # bnds = ((0, 1), (1.5, 3)) #20220524, used for NO2 and NO
         
         #VERSION USED FOR ALL TESTS IN 2025 
         bnds = ((None, None), (conf.omega_guess[pi]-0.1, conf.omega_guess[pi]+0.1)) # RV: default so far
-        #bnds = ((0, 1), (1.5, 3)) #20220524, used for NO2 and NO
         #VERSION USED FOR ALL TESTS IN 2025 
-        
-        #intialize variables
-#        numcells = nx*ny
-#        numcells = np.sum(flagRegioMat>0) # create empty matrix only for really needed points
-#        PrecPatch = np.zeros((numcells,(rad*2+1)**2));
-#        IndicEq = np.zeros((numcells,1));
-#        latVec =  np.zeros((numcells,1));
 
         print('precursor: {} {:.2f}'.format(PREC, conf.omega_guess[pi]), flush=True)
 

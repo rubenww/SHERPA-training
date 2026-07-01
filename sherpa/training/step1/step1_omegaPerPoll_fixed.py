@@ -20,8 +20,17 @@ def step1_omegaOptimization(conf):
     ny = conf.ny
     nx = conf.nx
 
+    #loop over precursors
+    print('precursors: {}'.format(conf.PrecToBeUsed), flush=True)
+    print('omega: {}'.format(conf.omega_guess), flush=True)
+    if len(conf.omega_guess) != len(conf.PrecToBeUsed):
+        print('wrong number of initial omegas!', flush=True)
+        exit()
+
     #initialize variables
-    omega = np.full([ny,nx,nPrec],conf.omega_guess);
+    omega = np.full([ny,nx,nPrec],np.nan) conf.omega_guess);
+    for i, pi in enumerate(conf.PrecToBeUsed):
+        omega[:,:,pi] = conf.omega_guess[i]
     
     conf.omegaFinalStep1_notFiltered = omega
     conf.omegaFinalStep1 = omega
