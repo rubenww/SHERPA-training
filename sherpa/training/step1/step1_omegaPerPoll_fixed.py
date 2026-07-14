@@ -28,7 +28,7 @@ def step1_omegaOptimization(conf):
         exit()
 
     #initialize variables
-    omega = np.full([ny,nx,nPrec],np.nan) conf.omega_guess);
+    omega = np.full([ny,nx,nPrec],np.nan)
     for i, pi in enumerate(conf.PrecToBeUsed):
         omega[:,:,pi] = conf.omega_guess[i]
     

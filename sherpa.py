@@ -43,9 +43,9 @@ start_time_loop = 0; end_time_loop = 1 #0,1 means you run only yearly values - 0
 # aqi_to_be_tested = list([5])
 
 #20230206 standard optimization to be performed
-# chooseOpt = 'step1_omegaPerPoll_aggRes_perPoll'        
-# chooseOpt = 'step1_omegaPerPoll_fixed'        
-chooseOpt = 'step1_omegaPerPoll_fixed_mean'        
+chooseOpt = 'step1_omegaPerPoll_aggRes_perPoll'        
+#chooseOpt = 'step1_omegaPerPoll_fixed'        
+#chooseOpt = 'step1_omegaPerPoll_fixed_mean'        
 # chooseOpt = 'step1_omegaPerPoll_fixed_mean_mask'        
 
 #20230206 only emepV434_camsV42withCond_01005_month is currently used
