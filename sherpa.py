@@ -43,15 +43,15 @@ start_time_loop = 0; end_time_loop = 1 #0,1 means you run only yearly values - 0
 # aqi_to_be_tested = list([5])
 
 #20230206 standard optimization to be performed
-chooseOpt = 'step1_omegaPerPoll_aggRes_perPoll'        
+#chooseOpt = 'step1_omegaPerPoll_aggRes_perPoll'        
 #chooseOpt = 'step1_omegaPerPoll_fixed'        
-#chooseOpt = 'step1_omegaPerPoll_fixed_mean'        
+chooseOpt = 'step1_omegaPerPoll_fixed_mean'        
 # chooseOpt = 'step1_omegaPerPoll_fixed_mean_mask'        
 
 #20230206 only emepV434_camsV42withCond_01005_month is currently used
 if chooseModel == 'rivm':
-    #import sherpa.configuration_emep4nl_2025 as c
-    import sherpa.configuration_emep4nl_2025_l03 as c
+    import sherpa.configuration_emep4nl_2025 as c
+    #import sherpa.configuration_emep4nl_2025_l03 as c
 elif chooseModel == 'emep10km':
     import sherpa.configuration_emep as c
 elif chooseModel == 'emepV434_camsV42withCond_01005_month':

@@ -41,9 +41,9 @@ def configuration(conf, chooseModel, chooseOpt, time_resol, time_loop, aqi_selec
     conf.gf = 0
     conf.rf1 = 0 # window of cells of training varying F (1=one ring of cells used for training, surrounding the target cell0
     conf.rf2 = 0
-    res_step = 2 # also set in step 1: resolution coarsening step factor (corresponds to ~level 03 resolution)
+    conf.res_step = 2 # also set in step 1: resolution coarsening step factor (corresponds to ~level 03 resolution)
     ndomain = 900
-    conf.radStep1 = int(round(ndomain/res_step)) # number of cells to be considered in step1
+    conf.radStep1 = int(round(ndomain/conf.res_step)) # number of cells to be considered in step1
     conf.radStep2 = ndomain # number of cells to be considered in step2
     conf.vec1 = [
             'SURF_ug_NH3', # 0

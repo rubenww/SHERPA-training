@@ -38,7 +38,7 @@ def iop(beta,inp1,inp2,rad, latVecFilt, poly):
 
 
 def step1_omegaOptimization(conf):
-    res_step = 1
+    res_step = conf.res_step
     #convert from 28 to 7 km
     Prec = f7.from7to28(conf.Prec, res_step);
     ny = int(round(conf.ny/res_step))
@@ -104,7 +104,7 @@ def step1_omegaOptimization(conf):
         # bnds = ((0, 1), (1.5, 3)) #20220524, used for NO2 and NO
         
         #VERSION USED FOR ALL TESTS IN 2025 
-        bnds = ((None, None), (conf.omega_guess[pi]-0.1, conf.omega_guess[pi]+0.1)) # RV: default so far
+        bnds = ((None, None), (conf.omega_guess[pi]-0.15, conf.omega_guess[pi]+0.15)) # RV: default so far
         #VERSION USED FOR ALL TESTS IN 2025 
 
         print('precursor: {} {:.2f}'.format(PREC, conf.omega_guess[pi]), flush=True)
